@@ -1,4 +1,10 @@
 {
+    "talos_cluster_name": "<CLUSTER_NAME>",
+    "talos_version": "<TALOS_VERSION>",
+    "talos_arch": "<TALOS_ARCH>",
+    "proxmox_node": "<PROXMOX_NODE>",
+    "proxmox_url": "<PROXMOX_URL>",
     "ssh_username": "<SSH_USERNAME>",
-    "ssh_password": "<SSH_PASSWORD>"
+    "ssh_password": "<SSH_PASSWORD>",
+    "tls_insecure": true
 }
