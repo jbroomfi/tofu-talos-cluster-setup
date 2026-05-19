@@ -1,2 +1,6 @@
 hello
+<<<<<<< HEAD
 more cheese gromitt
+=======
+more cheese gromit
+>>>>>>> 616a06e2b276f90b0e667a4793556e05e2b4e61f
