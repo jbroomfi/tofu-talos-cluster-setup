@@ -13,7 +13,7 @@ The configuration of each VM is declared in a .tf file and tofu will generate an
 * You're comfortable with or willing to learn about using the linux command line
 
 Note: Each Talos Node that you configure will require at a minimum 4GB of RAM and two virtual storage drives (one for boot/system and another larger drive for a replicated ceph storage config)
-
+`
  /---------\  /---------\       /---------\
  | Node #1 |  | Node #2 |       | Node #x |
  |   4GB   |  |   4GB   |       |   4GB   |
@@ -22,7 +22,7 @@ Note: Each Talos Node that you configure will require at a minimum 4GB of RAM an
  |   sda   |  |   sda   |       |   sda   |
  |   sdb   |  |   sdb   |       |   sdb   |
  \---------/  \---------/       \---------/
-
+`
 ## Pre-requisites
 
 ## Preparing Tofu Resources
