@@ -13,16 +13,23 @@ The configuration of each VM is declared in a .tf file and tofu will generate an
 * You're comfortable with or willing to learn about using the linux command line
 
 Note: Each Talos Node that you configure will require at a minimum 4GB of RAM and two virtual storage drives (one for boot/system and another larger drive for a replicated ceph storage config)
-`
- /---------\  /---------\       /---------\
- | Node #1 |  | Node #2 |       | Node #x |
- |   4GB   |  |   4GB   |       |   4GB   |
- |         |  |         | ..... |         |
- |---------|  |---------|       |---------|
- |   sda   |  |   sda   |       |   sda   |
- |   sdb   |  |   sdb   |       |   sdb   |
- \---------/  \---------/       \---------/
-`
+```mermaid
+block-beta
+columns 1
+  block:ControlPlane
+    Node1["CP1<br/><a style='font-size: 8pt'>4GB<br/>/dev/sda<br/>/dev/sdb"]
+    Node2["CP2<br/><a style='font-size: 8pt'>4GB<br/>/dev/sda<br/>/dev/sdb"]
+    Node3["CP3<br/><a style='font-size: 8pt'>4GB<br/>/dev/sda<br/>/dev/sdb"]
+  end
+  space
+  block:WorkerPlane
+    WorkerNode1["WN1<br/><a style='font-size: 8pt'>4GB<br/>/dev/sda<br/>/dev/sdb"]
+    WorkerNode2["WN2<br/><a style='font-size: 8pt'>4GB<br/>/dev/sda<br/>/dev/sdb"]
+  end
+  ControlPlane --> WorkerPlane
+  WorkerPlane --> ControlPlane
+  
+```
 ## Pre-requisites
 
 ## Preparing Tofu Resources
