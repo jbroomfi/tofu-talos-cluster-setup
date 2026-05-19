@@ -9,6 +9,8 @@ This solution requires a number of environment variables to be defined that eith
 - [Proxmox Identity for integration with Tofu](#proxmox-identity-for-integration-with-tofu)
 - [Cluster Configuration](#cluster-configuration)
 
+A convenience script has been created and made available in the `./scripts/` folder called `set-envvars.sh` or `set-envvars.ps1`
+
 ## Proxmox Identity for integration with Tofu
 To successfully execute the tofu scripts in this solution, you'll need to ensure that you have at a minimum the following environment variables defined.
 

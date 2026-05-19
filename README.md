@@ -32,8 +32,8 @@ columns 1
 ```
 ## Pre-requisites
 
-- [Add a terraform linux user account](./docs/pre-requisites/add-linux-user-account.md)
-- [Environment Variables](./docs/pre-requisites//environment-variables.md)
+1. [Add a terraform linux user account](./docs/pre-requisites/add-linux-user-account.md)
+2. [Environment Variables](./docs/pre-requisites//environment-variables.md)
 
 ## Preparing Tofu Resources
 
@@ -47,6 +47,13 @@ columns 1
 ## Applying the plan
 
 ## Retrieving the config files
+
+Before you can do anything with either talos or kubernetes at the commandline you'll need to pull the configuration files from the provisioned cluster.  There are two configuration files that are needed.
+
+1. The talosconfig file that provides configuration information on the provisioned talos cluster itself for the commandline utillity talosctl and 
+2. The kubeconfig file that provides configuration information and user authentication for the kubernetes commandline utility kubectl
+
+A convenience script has been created and made available in the `./scripts/` folder called `get-configs.sh` or `get-configs.ps1`
 
 ###  Getting the talos config file
 Run the following command in a bash prompt to get the talosconfig file.
