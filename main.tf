@@ -11,17 +11,14 @@ provider "proxmox" {
 
 locals {
 
-  node               = var.proxmox_node
-  clustername        = var.talos_cluster_name
-  talos_version      = var.talos_version
-  talos_arch         = var.talos_arch
-  talos_schematic_id = var.talos_schematic_id
+  node          = var.proxmox_node
+  clustername   = var.talos_cluster_name
+  talos_version = var.talos_version
 
   disksizecontrolprimary  = 16
   disksizeworkerprimary   = 16
   disksizeworkersecondary = 32
   cpucores                = 2
-
 }
 
 module "talos" {
@@ -30,8 +27,6 @@ module "talos" {
 
   talos_cluster_name = local.clustername
   talos_version      = local.talos_version
-  #talos_arch         = local.talos_arch
-  #talos_schematic_id = local.talos_schematic_id
 
   proxmox_worker_vm_disk_size  = local.disksizeworkerprimary
   proxmox_control_vm_disk_size = local.disksizecontrolprimary
@@ -41,14 +36,12 @@ module "talos" {
   control_nodes = {
     "w-K8-control-0" = local.node
     "w-K8-control-1" = local.node
-
   }
 
   worker_nodes = {
     "w-K8-worker-0" = local.node
     "w-K8-worker-1" = local.node
     "w-K8-worker-2" = local.node
-
   }
 
   worker_extra_disks = {

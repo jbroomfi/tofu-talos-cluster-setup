@@ -18,6 +18,11 @@
 
 ### Terraform ###
 # Terraform state and configuration files
+terraform.tfstate.d/
+
+# Terraform user ssh keys
+terraform
+terraform.pub
 
 # Terraform state files
 *.tfstate
@@ -91,3 +96,8 @@ sealed-secrets/
 *.log
 
 *.tmp
+
+
+### talos cluster files
+talosconfig
+.talosconfig
