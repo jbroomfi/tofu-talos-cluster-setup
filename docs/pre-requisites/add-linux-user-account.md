@@ -56,7 +56,6 @@ total 12
 ```
 
 Next step is to edit the terraform file and add the following text then save and exit;
-```text
 terraform ALL=(ALL) NOPASSWD:ALL
 ```
 
