@@ -6,11 +6,24 @@ This project details the pre-requisites and steps required to deploy a talos lin
 
 The configuration of each VM is declared in a .tf file and tofu will generate an execution plan against the Proxmox environment that when applied will create the VMs with the exact specs listed in the tf file.  This approach ensures a level of consistency between different environments (assuming no changes are made to the TF files before executing the scripts).
 
+## References
+  * [OpenTofu (v1.12.0)](https://opentofu.org)
+  * [Proxmox Virtual Environment (v9.1.14)](https://www.proxmox.com/en/products/proxmox-virtual-environment/overview)
+  * [Terraform Providers](https://search.opentofu.org)
+    -  [bpg/proxmox (v0.106.0)](https://search.opentofu.org/provider/bpg/proxmox/latest)
+    -  [siderolabs/talos (v0.11.0)](https://search.opentofu.org/provider/siderolabs/talos/latest)
+    -  [hashicorp/time (v0.14.0)](https://search.opentofu.org/provider/hashicorp/time/latest)
+
+**Note** Versions listed above were the latest versions available at the time this document was created or last modified.  
+
+Alpha and Beta versions should not be considered as candidates for use in this solution unless the alpha/beta release fixes a specific issue being experienced.
+
 ### Assumptions
 
 * You have a proxmox virtual server environment available with sufficient free resources available for the Talos Node VMs
-* That you have experience with Proxmox VE and Talos Linux
+* That you have experience with Proxmox VE, OpenTofu and Talos Linux
 * You're comfortable with or willing to learn about using the linux command line
+* Where possible PowerShell scripts will be provided but if scripts are required they will be written in bash first and then PowerShell
 
 Note: Each Talos Node that you configure will require at a minimum 4GB of RAM and two virtual storage drives (one for boot/system and another larger drive for a replicated ceph storage config)
 ```mermaid
