@@ -8,6 +8,8 @@ While using an account secured by an API Token is the most secure approach to wo
 
 - [Installing sudo on proxmox](#install-sudo-on-proxmox)
 - [Create the terraform user](#create-the-terraform-user)
+- [Add a sudo config file for the terraform user](#add-a-sudo-config-file-for-the-terraform-user)
+- [Add the terraform user to the sudo group](#add-the-terraform-user-to-the-sudo-group)
 - [Create a ssh key for the terraform user](#create-a-ssh-key-for-the-terraform-user)
 - [Copy the terraform ssh key to proxmox host](#copy-the-terraform-ssh-public-key-to-the-proxmox-host)
 - [Add an alias to the .ssh/config file (optional)](#add-an-alias-to-the-sshconfig-file)
@@ -37,12 +39,52 @@ Is the information correct? [Y/n]
 #
 ```
 
+## Add a sudo config file for the terraform user
+Before the terraform user can start using sudo, two configuration changes are needed.  First we need configure what the terraform user can be using sudo via a configuration file.  
+
+There are two ways in which permissions can be granted, one is by adding an entry directly into the `/etc/sudoers` file, the other is by creating a new file in the folder `/etc/sudoers.d/`.  In this project, we'll use the second approach as it's safer and avoids making any changes directly to the primary `/etc/sudoers` file.  An invalid `/etc/sudoers` file can very effectively break the sudo system.
+
+To do this, we need to create a new text file as `root` in the folder `/etc/sudoers.d/`
+
+```bash
+# touch /etc/sudoers.d/terraform
+# ls -l /etc/sudoers.d/
+total 12
+-r--r----- 1 root root 1068 Feb 11 19:22 README
+-rw-r--r-- 1 root root    0 May 19 18:29 terraform
+-r--r----- 1 root root  666 May 20  2023 zfs
+```
+
+Next step is to edit the terraform file and add the following text then save and exit;
+```text
+terraform ALL=(ALL) NOPASSWD:ALL
+```
+
+## Add the terraform user to the sudo group
+This is the second configuration change required for sudo to work.  We need to add the `terraform` user to the `sudo` group.
+
+To do this, we need to use the following command;
+
+```bash
+# usermod -aG sudo terraform
+```
+
+To verify that the `terraform` user now has access to the sudo group, use the `su terraform` command to change to the terraform user and then enter id, this will display the user id and group membership details for the terraform user.  The group sudo should be listed in the groups object.
+
+```bash
+# su terraform
+terraform@pve:/root$ cd 
+terraform@pve:~$ id
+uid=1000(terraform) gid=1000(terraform) groups=1000(terraform),27(sudo),100(users)
+terraform@pve:~$ 
+```
+
 ## Create a ssh key for the terraform user
 Now we need to create ssh key pair for the terraform user.  
 
-**Note:** This needs to be done from the machine on which the tofu scripts will be executed, not on the proxmox host.
+**Note:** This needs to be done from the machine on which the tofu scripts will be executed, **not** on the proxmox host.
 
-To do this we need to use the ssh-keygen command;
+To do this, we need to use the ssh-keygen command;
 
 ```bash
 # ssh-keygen -f terraform
@@ -63,7 +105,7 @@ Now we need to send a copy of the public key for the terraform user to the Proxm
 To do this we need to use the following command;
 
 ```bash
-# ssh-copy-id 0i ~/.ssh/terraform terraform@<pve-host>
+# ssh-copy-id -i ~/.ssh/terraform terraform@<pve-host>
 /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/admin/.ssh/terraform.pub"
 /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
 /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
