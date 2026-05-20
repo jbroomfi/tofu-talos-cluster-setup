@@ -59,6 +59,24 @@ columns 1
 
 ## Applying the plan
 
+The repository also includes a separate OpenTofu configuration in `./nfs-server/` for provisioning an NFS server VM on Proxmox.
+
+From the repository root you can use:
+
+```bash
+make nfs-up
+make nfs-down
+```
+
+Useful NFS-specific targets:
+
+```bash
+make nfs-init
+make nfs-plan
+make nfs-apply
+make nfs-destroy
+```
+
 ## Retrieving the config files
 
 Before you can do anything with either talos or kubernetes at the commandline you'll need to pull the configuration files from the provisioned cluster.  There are two configuration files that are needed.

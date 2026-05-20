@@ -13,18 +13,18 @@ terraform {
 #  insecure  = true
 #}
 
-locals{
-	node = "proxmox"
-	 username = "root@pam"
-	 user = "root"
-	password = "@87zXPx6q6W7P8y"
+locals {
+  node     = var.proxmox_node
+  username = var.proxmox_admin_user
+  user     = "root"
+  password = var.proxmox_admin_password
 }
 
 provider "proxmox" {
-  endpoint  = "https://proxmox.internal:8006/"
- # api_token = "root@pam!tofu=fce117e6-455e-48cf-8ba9-78674d5c18bf"
- username = local.username
- password = local.password
+  endpoint = var.proxmox_url
+  # api_token = "root@pam!tofu=fce117e6-455e-48cf-8ba9-78674d5c18bf"
+  username = local.username
+  password = local.password
   insecure = true
 }
 
@@ -45,7 +45,7 @@ resource "null_resource" "proxmox_prep" {
     connection {
       type     = "ssh"
       user     = local.user
-      host     = "proxmox.internal"
+      host     = var.proxmox_fqdn
       password = local.password
       # or use:
       # private_key = file("~/.ssh/id_rsa")
@@ -57,7 +57,7 @@ resource "null_resource" "proxmox_prep" {
 ############################
 # Download Debian cloud image
 ############################
-resource "proxmox_virtual_environment_download_file" "debian" {
+resource "proxmox_download_file" "debian" {
   content_type = "import"
   datastore_id = "local"
   node_name    = local.node
@@ -80,6 +80,14 @@ resource "proxmox_virtual_environment_file" "cloudinit" {
   source_raw {
     data = <<EOF
 #cloud-config
+users:
+  - name: nfs-admin
+    lock_passwd: false
+    passwd: "?TestPassword2026?"
+    primary_group: nfs-admin
+    groups: users, sudo
+    shell: /bin/bash
+
 hostname: nfs-server
 
 package_update: true
@@ -90,8 +98,8 @@ packages:
 runcmd:
   - mkdir -p /srv/nfs
   - echo "/srv/nfs *(rw,sync,no_subtree_check,no_root_squash)" >> /etc/exports
-  - systemctl enable nfs-server
-  - systemctl start nfs-server
+  - systemctl enable nfs-server --now
+  - systemctl restart network.service
 EOF
 
     file_name = "nfs.yaml"
@@ -108,7 +116,7 @@ resource "proxmox_virtual_environment_vm" "nfs_vm" {
   vm_id     = 300
 
   cpu {
-	type  = "x86-64-v2-AES"
+    type  = "x86-64-v2-AES"
     cores = 2
   }
 
@@ -121,13 +129,13 @@ resource "proxmox_virtual_environment_vm" "nfs_vm" {
     datastore_id = "local-lvm"
     interface    = "virtio0"
 
-    file_id      = proxmox_virtual_environment_download_file.debian.id
-    size         = 100
+    file_id = proxmox_download_file.debian.id
+    size    = 100
   }
 
   # Cloud-init
   initialization {
-    datastore_id = "local-lvm"
+    datastore_id      = "local-lvm"
     user_data_file_id = proxmox_virtual_environment_file.cloudinit.id
 
     ip_config {
@@ -139,9 +147,9 @@ resource "proxmox_virtual_environment_vm" "nfs_vm" {
 
   # Networking
   network_device {
-    bridge = "vmbr0"
-    model  = "virtio"
-	mac_address = "bc:24:11:6e:a0:01"
+    bridge      = "vmbr0"
+    model       = "virtio"
+    mac_address = "bc:24:11:6e:a0:01"
   }
 
   # Required for cloud images
@@ -153,7 +161,5 @@ resource "proxmox_virtual_environment_vm" "nfs_vm" {
 
   boot_order = ["virtio0"]
 
-  
-started = true
+  started = true
 }
-
