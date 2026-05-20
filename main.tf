@@ -2,19 +2,11 @@ provider "proxmox" {
   endpoint = var.proxmox_url
   insecure = var.tls_insecure
 
-<<<<<<< HEAD
   # ssh {
   #    agent    = true
   #    username = var.ssh_username
   #    password = var.ssh_password
   # }
-=======
- # ssh {
- #   agent    = true
- #   username = var.ssh_username
- #   password = var.ssh_password
- # }
->>>>>>> 1378b6959a30f29a842ffe0c01b3bf27d02c90b5
 }
 
 locals {
