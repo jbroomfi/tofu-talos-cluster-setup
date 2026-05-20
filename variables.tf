@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1378b6959a30f29a842ffe0c01b3bf27d02c90b5
 variable "proxmox_url" {
   description = "Proxmox URL"
   type        = string
