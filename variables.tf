@@ -22,17 +22,30 @@ variable "proxmox_worker_vm_cores" {
   default     = 4
 }
 
-variable "proxmox_control_vm_disk_size" {
+variable "proxmox_talos_node_memory" {
+  description = "Memory for each Talos node in MB"
+  type        = number
+  default     = 4096
+}
+
+variable "proxmox_control_vm_primary_disk_size" {
   description = "Proxmox control VM disk size in GB"
   type        = number
   default     = 16
 }
 
-variable "proxmox_worker_vm_disk_size" {
+variable "proxmox_worker_vm_primary_disk_size" {
   description = "Proxmox worker VM disk size in GB"
+  type        = number
+  default     = 16
+}
+
+variable "proxmox_worker_vm_secondary_disk_size" {
+  description = "Proxmox worker VM secondary disk size in GB"
   type        = number
   default     = 32
 }
+
 
 variable "talos_cluster_name" {
   description = "Name of the Talos cluster"

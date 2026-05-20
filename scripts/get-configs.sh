@@ -1,6 +1,8 @@
 #!/bin/bash
 
-KUBE_ROOT_DIR="$(pwd)/../.kube"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+KUBE_ROOT_DIR="$PROJECT_ROOT/.kube"
 
 if [ ! -d "$KUBE_ROOT_DIR" ]; then
   mkdir -p "$KUBE_ROOT_DIR"

@@ -15,10 +15,10 @@ locals {
   clustername   = var.talos_cluster_name
   talos_version = var.talos_version
 
-  disksizecontrolprimary  = 16
-  disksizeworkerprimary   = 16
-  disksizeworkersecondary = 32
-  cpucores                = 2
+  disksizecontrolprimary  = var.proxmox_control_vm_primary_disk_size
+  disksizeworkerprimary   = var.proxmox_worker_vm_primary_disk_size
+  disksizeworkersecondary = var.proxmox_worker_vm_secondary_disk_size
+  cpucores                = var.proxmox_control_vm_cores  
 }
 
 module "talos" {

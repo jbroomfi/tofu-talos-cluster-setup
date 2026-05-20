@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "opentofu": {
+      "type": "sse",
+      "url": "https://mcp.opentofu.org/sse"
+    }
+  }
+}

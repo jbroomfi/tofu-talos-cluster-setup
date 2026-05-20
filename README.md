@@ -68,6 +68,13 @@ Before you can do anything with either talos or kubernetes at the commandline yo
 
 A convenience script has been created and made available in the `./scripts/` folder called `get-configs.sh` or `get-configs.ps1`
 
+From the repository root you can run:
+
+```bash
+./scripts/get-configs.sh
+source ./scripts/set-k8s-envvars.sh
+```
+
 ###  Getting the talos config file
 Run the following command in a bash prompt to get the talosconfig file.
 
