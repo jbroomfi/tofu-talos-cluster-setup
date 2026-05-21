@@ -77,13 +77,16 @@ variable "tls_insecure" {
 
 variable "talos_schematic_id" {
   # Generate your own at https://factory.talos.dev/
-  # The this id has these extensions:
-  # qemu-guest-agent (required)
-  # If you make your own make sure you check this extension
+  # This default schematic includes:
+  # qemu-guest-agent
+  # nfs-utils
+  # iscsi-tools
+  # util-linux-tools
+  # If you make your own, keep qemu-guest-agent enabled for Proxmox guest agent support.
   # The ID is independent of the version and architecture of the image
   description = "Schematic ID for the Talos cluster"
   type        = string
-  default     = "ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515"
+  default     = "e3ffcb1daac2b1fdc51d2db5f1f34c8d644c2c86517300ef8ff8e9385a457d4f"
 }
 
 variable "worker_extra_disks" {

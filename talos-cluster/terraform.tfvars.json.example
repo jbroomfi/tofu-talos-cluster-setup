@@ -2,6 +2,7 @@
     "talos_cluster_name": "<CLUSTER_NAME>",
     "talos_version": "<TALOS_VERSION>",
     "talos_arch": "<TALOS_ARCH>",
+    "talos_schematic_id": "<TALOS_FACTORY_SCHEMATIC_ID>",
     "proxmox_node": "<PROXMOX_NODE>",
     "proxmox_url": "<PROXMOX_URL>",
     "tls_insecure": true

@@ -11,9 +11,18 @@ provider "proxmox" {
 
 locals {
 
-  node          = var.proxmox_node
-  clustername   = var.talos_cluster_name
-  talos_version = var.talos_version
+  node                  = var.proxmox_node
+  clustername           = var.talos_cluster_name
+  talos_version         = var.talos_version
+  talos_installer_image = "factory.talos.dev/metal-installer/${var.talos_schematic_id}:v${var.talos_version}"
+  machine_install_patch = yamlencode({
+    machine = {
+      install = {
+        disk  = "/dev/vda"
+        image = local.talos_installer_image
+      }
+    }
+  })
 
   disksizecontrolprimary  = var.proxmox_control_vm_primary_disk_size
   disksizeworkerprimary   = var.proxmox_worker_vm_primary_disk_size
@@ -27,11 +36,18 @@ module "talos" {
 
   talos_cluster_name = local.clustername
   talos_version      = local.talos_version
+  talos_schematic_id = var.talos_schematic_id
 
   proxmox_worker_vm_disk_size  = local.disksizeworkerprimary
   proxmox_control_vm_disk_size = local.disksizecontrolprimary
   proxmox_worker_vm_cores      = local.cpucores
   proxmox_control_vm_cores     = local.cpucores
+  control_machine_config_patches = [
+    local.machine_install_patch,
+  ]
+  worker_machine_config_patches = [
+    local.machine_install_patch,
+  ]
 
   control_nodes = {
     "w-K8-control-0" = local.node

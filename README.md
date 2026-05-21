@@ -42,6 +42,16 @@ cp talos-cluster/terraform.tfvars.json.example talos-cluster/terraform.tfvars.js
 
 Edit `talos-cluster/terraform.tfvars.json` for your environment.
 
+By default, `talos-cluster/variables.tf` points at a Talos Factory schematic that includes:
+
+- `qemu-guest-agent`
+- `nfs-utils`
+- `iscsi-tools`
+- `util-linux-tools`
+
+If you generate your own schematic, set `talos_schematic_id` in `talos-cluster/terraform.tfvars.json`.
+The Talos config now uses that schematic both for the initial Proxmox image download and for the Talos installer image recorded in machine configuration, so future extension changes stay in OpenTofu-managed config.
+
 ### NFS server
 
 ```bash
@@ -160,3 +170,4 @@ These all operate on `./nfs-server`.
 - The root `Makefile` is the intended interface; you usually do not need to `cd` into either OpenTofu directory manually
 - Generated artifacts such as `./.kube/`, local tfvars files, and state files are intentionally untracked
 - Running `make` with no arguments prints the current help text
+- On an existing cluster, changing `talos_schematic_id` updates the desired installer image, but you still need a rolling `talosctl upgrade` to replace the running Talos image on each node
