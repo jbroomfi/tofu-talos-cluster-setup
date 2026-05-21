@@ -57,13 +57,16 @@ resource "null_resource" "proxmox_prep" {
 ############################
 # Download Debian cloud image
 ############################
+
+# bookworm based image  - "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
+# trixie based image    - "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2"
 resource "proxmox_download_file" "debian" {
   content_type = "import"
   datastore_id = "local"
   node_name    = local.node
 
-  url       = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
-  file_name = "debian-12.qcow2"
+  url       = "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2"
+  file_name = "debian-13.qcow2"
 }
 
 ############################
@@ -81,12 +84,28 @@ resource "proxmox_virtual_environment_file" "cloudinit" {
     data = <<EOF
 #cloud-config
 users:
-  - name: nfs-admin
-    lock_passwd: false
-    passwd: "?TestPassword2026?"
-    primary_group: nfs-admin
-    groups: users, sudo
+  - name: root
     shell: /bin/bash
+
+  - name: debian
+    shell: /bin/bash
+    primary_group: debian
+    groups: users, sudo
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+
+  - name: nfs-admin
+    shell: /bin/bash
+    primary_group: nfs-admin    
+    groups: users, sudo
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+
+ssh_pwauth: true
+chpasswd:
+  expire: false
+  list:
+    - root:?Pa55W0rd1?
+    - debian:?TryThisNow300?
+    - nfs-admin:?Pa55W0rd1?
 
 hostname: nfs-server
 
@@ -99,7 +118,6 @@ runcmd:
   - mkdir -p /srv/nfs
   - echo "/srv/nfs *(rw,sync,no_subtree_check,no_root_squash)" >> /etc/exports
   - systemctl enable nfs-server --now
-  - systemctl restart network.service
 EOF
 
     file_name = "nfs.yaml"
