@@ -52,7 +52,7 @@ By default, `talos-cluster/variables.tf` points at a Talos Factory schematic tha
 If you generate your own schematic, set `talos_schematic_id` in `talos-cluster/terraform.tfvars.json`.
 The Talos config now uses that schematic both for the initial Proxmox image download and for the Talos installer image recorded in machine configuration, so future extension changes stay in OpenTofu-managed config.
 
-This Talos config enables kubelet `serverTLSBootstrap` and deploys a `kubelet-csr-approver` inline manifest from the control plane machine config. Talos manages kubelet client certificate rotation itself, so this repo does not override `rotateCertificates`. For a stricter approver policy, set `kubelet_serving_cert_approver_provider_ip_prefixes` in `talos-cluster/terraform.tfvars.json` to the CIDR range(s) used by your Talos nodes.
+This Talos config enables kubelet `serverTLSBootstrap` and deploys `kubelet-csr-approver` plus `metrics-server` as inline manifests from the control plane machine config. Talos manages kubelet client certificate rotation itself, so this repo does not override `rotateCertificates`. For a stricter approver policy, set `kubelet_serving_cert_approver_provider_ip_prefixes` in `talos-cluster/terraform.tfvars.json` to the CIDR range(s) used by your Talos nodes.
 
 ### NFS server
 

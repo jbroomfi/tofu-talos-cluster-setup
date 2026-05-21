@@ -6,6 +6,10 @@
     "kubelet_serving_cert_approver_provider_ip_prefixes": [
         "<NODE_SUBNET_CIDR>"
     ],
+    "metrics_server_kubelet_preferred_address_types": [
+        "InternalIP",
+        "Hostname"
+    ],
     "proxmox_node": "<PROXMOX_NODE>",
     "proxmox_url": "<PROXMOX_URL>",
     "tls_insecure": true

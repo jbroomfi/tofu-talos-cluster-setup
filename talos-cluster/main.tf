@@ -23,10 +23,12 @@ locals {
     "w-K8-worker-1" = local.node
     "w-K8-worker-2" = local.node
   }
+
   kubelet_serving_cert_approver_provider_regex = coalesce(
     var.kubelet_serving_cert_approver_provider_regex,
     "(?i)^(?:${join("|", sort(concat(keys(local.control_nodes), keys(local.worker_nodes))))})(?:\\..+)?$",
   )
+
   talos_installer_image = "factory.talos.dev/metal-installer/${var.talos_schematic_id}:v${var.talos_version}"
   machine_install_patch = yamlencode({
     machine = {
@@ -36,6 +38,7 @@ locals {
       }
     }
   })
+
   kubelet_tls_bootstrap_patch = yamlencode({
     machine = {
       kubelet = {
@@ -45,6 +48,7 @@ locals {
       }
     }
   })
+
   kubelet_serving_cert_approver_manifest = templatefile("${path.module}/inline-manifests/kubelet-csr-approver.yaml.tftpl", {
     image                 = var.kubelet_serving_cert_approver_image
     provider_regex        = local.kubelet_serving_cert_approver_provider_regex
@@ -52,14 +56,27 @@ locals {
     bypass_dns_resolution = var.kubelet_serving_cert_approver_bypass_dns_resolution
     allowed_dns_names     = var.kubelet_serving_cert_approver_allowed_dns_names
   })
-  kubelet_serving_cert_approver_patch = var.enable_kubelet_serving_cert_approver ? yamlencode({
+  metrics_server_manifest = templatefile("${path.module}/inline-manifests/metrics-server.yaml.tftpl", {
+    image                   = var.metrics_server_image
+    preferred_address_types = join(",", var.metrics_server_kubelet_preferred_address_types)
+  })
+  cluster_inline_manifests = concat(
+    var.enable_kubelet_serving_cert_approver ? [
+      {
+        name     = "kubelet-csr-approver"
+        contents = local.kubelet_serving_cert_approver_manifest
+      },
+    ] : [],
+    var.enable_metrics_server ? [
+      {
+        name     = "metrics-server"
+        contents = local.metrics_server_manifest
+      },
+    ] : [],
+  )
+  cluster_inline_manifests_patch = length(local.cluster_inline_manifests) > 0 ? yamlencode({
     cluster = {
-      inlineManifests = [
-        {
-          name     = "kubelet-csr-approver"
-          contents = local.kubelet_serving_cert_approver_manifest
-        },
-      ]
+      inlineManifests = local.cluster_inline_manifests
     }
   }) : null
 
@@ -84,7 +101,7 @@ module "talos" {
   control_machine_config_patches = compact([
     local.machine_install_patch,
     local.kubelet_tls_bootstrap_patch,
-    local.kubelet_serving_cert_approver_patch,
+    local.cluster_inline_manifests_patch,
   ])
   worker_machine_config_patches = compact([
     local.machine_install_patch,

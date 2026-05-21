@@ -126,6 +126,24 @@ variable "kubelet_serving_cert_approver_allowed_dns_names" {
   default     = 2
 }
 
+variable "enable_metrics_server" {
+  description = "Deploy metrics-server as a Talos inline manifest"
+  type        = bool
+  default     = true
+}
+
+variable "metrics_server_image" {
+  description = "OCI image for metrics-server"
+  type        = string
+  default     = "registry.k8s.io/metrics-server/metrics-server:v0.8.1"
+}
+
+variable "metrics_server_kubelet_preferred_address_types" {
+  description = "Ordered node address types metrics-server should use when scraping kubelets"
+  type        = list(string)
+  default     = ["InternalIP", "Hostname"]
+}
+
 variable "worker_extra_disks" {
   # This allows for extra disks to be added to the worker VMs
   # TODO - Should we allow other things like host PCI devices as well E.g., GPUs?
