@@ -89,6 +89,43 @@ variable "talos_schematic_id" {
   default     = "e3ffcb1daac2b1fdc51d2db5f1f34c8d644c2c86517300ef8ff8e9385a457d4f"
 }
 
+variable "enable_kubelet_serving_cert_approver" {
+  description = "Deploy the kubelet serving CSR approver as a Talos inline manifest"
+  type        = bool
+  default     = true
+}
+
+variable "kubelet_serving_cert_approver_image" {
+  description = "OCI image for the kubelet serving CSR approver"
+  type        = string
+  default     = "ghcr.io/postfinance/kubelet-csr-approver:v1.2.14"
+}
+
+variable "kubelet_serving_cert_approver_provider_regex" {
+  description = "Regex used by the approver to validate kubelet DNS SANs; defaults to the hardcoded node names in main.tf"
+  type        = string
+  default     = null
+  nullable    = true
+}
+
+variable "kubelet_serving_cert_approver_provider_ip_prefixes" {
+  description = "Allowed node IP prefixes for kubelet serving CSRs; set this to your node subnet CIDRs for stricter approval"
+  type        = list(string)
+  default     = []
+}
+
+variable "kubelet_serving_cert_approver_bypass_dns_resolution" {
+  description = "Disable DNS resolution checks in the approver if node hostnames are not resolvable"
+  type        = bool
+  default     = true
+}
+
+variable "kubelet_serving_cert_approver_allowed_dns_names" {
+  description = "Maximum number of DNS SANs allowed in kubelet serving certificate requests"
+  type        = number
+  default     = 2
+}
+
 variable "worker_extra_disks" {
   # This allows for extra disks to be added to the worker VMs
   # TODO - Should we allow other things like host PCI devices as well E.g., GPUs?

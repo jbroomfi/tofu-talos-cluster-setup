@@ -11,9 +11,22 @@ provider "proxmox" {
 
 locals {
 
-  node                  = var.proxmox_node
-  clustername           = var.talos_cluster_name
-  talos_version         = var.talos_version
+  node          = var.proxmox_node
+  clustername   = var.talos_cluster_name
+  talos_version = var.talos_version
+  control_nodes = {
+    "w-K8-control-0" = local.node
+    "w-K8-control-1" = local.node
+  }
+  worker_nodes = {
+    "w-K8-worker-0" = local.node
+    "w-K8-worker-1" = local.node
+    "w-K8-worker-2" = local.node
+  }
+  kubelet_serving_cert_approver_provider_regex = coalesce(
+    var.kubelet_serving_cert_approver_provider_regex,
+    "(?i)^(?:${join("|", sort(concat(keys(local.control_nodes), keys(local.worker_nodes))))})(?:\\..+)?$",
+  )
   talos_installer_image = "factory.talos.dev/metal-installer/${var.talos_schematic_id}:v${var.talos_version}"
   machine_install_patch = yamlencode({
     machine = {
@@ -23,6 +36,32 @@ locals {
       }
     }
   })
+  kubelet_tls_bootstrap_patch = yamlencode({
+    machine = {
+      kubelet = {
+        extraConfig = {
+          serverTLSBootstrap = true
+        }
+      }
+    }
+  })
+  kubelet_serving_cert_approver_manifest = templatefile("${path.module}/inline-manifests/kubelet-csr-approver.yaml.tftpl", {
+    image                 = var.kubelet_serving_cert_approver_image
+    provider_regex        = local.kubelet_serving_cert_approver_provider_regex
+    provider_ip_prefixes  = var.kubelet_serving_cert_approver_provider_ip_prefixes
+    bypass_dns_resolution = var.kubelet_serving_cert_approver_bypass_dns_resolution
+    allowed_dns_names     = var.kubelet_serving_cert_approver_allowed_dns_names
+  })
+  kubelet_serving_cert_approver_patch = var.enable_kubelet_serving_cert_approver ? yamlencode({
+    cluster = {
+      inlineManifests = [
+        {
+          name     = "kubelet-csr-approver"
+          contents = local.kubelet_serving_cert_approver_manifest
+        },
+      ]
+    }
+  }) : null
 
   disksizecontrolprimary  = var.proxmox_control_vm_primary_disk_size
   disksizeworkerprimary   = var.proxmox_worker_vm_primary_disk_size
@@ -42,23 +81,19 @@ module "talos" {
   proxmox_control_vm_disk_size = local.disksizecontrolprimary
   proxmox_worker_vm_cores      = local.cpucores
   proxmox_control_vm_cores     = local.cpucores
-  control_machine_config_patches = [
+  control_machine_config_patches = compact([
     local.machine_install_patch,
-  ]
-  worker_machine_config_patches = [
+    local.kubelet_tls_bootstrap_patch,
+    local.kubelet_serving_cert_approver_patch,
+  ])
+  worker_machine_config_patches = compact([
     local.machine_install_patch,
-  ]
+    local.kubelet_tls_bootstrap_patch,
+  ])
 
-  control_nodes = {
-    "w-K8-control-0" = local.node
-    "w-K8-control-1" = local.node
-  }
+  control_nodes = local.control_nodes
 
-  worker_nodes = {
-    "w-K8-worker-0" = local.node
-    "w-K8-worker-1" = local.node
-    "w-K8-worker-2" = local.node
-  }
+  worker_nodes = local.worker_nodes
 
   #
 
