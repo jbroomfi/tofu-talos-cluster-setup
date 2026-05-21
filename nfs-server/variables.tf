@@ -16,6 +16,12 @@ variable "proxmox_admin_user" {
   default     = "root@pam"
 }
 
+variable "proxmox_admin_user_short" {
+  description = "Proxmox admin username without @"
+  type        = string
+  default     = "root"
+}
+
 variable "proxmox_admin_password" {
   description = "Proxmox admin password"
   type        = string

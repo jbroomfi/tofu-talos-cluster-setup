@@ -16,7 +16,7 @@ terraform {
 locals {
   node     = var.proxmox_node
   username = var.proxmox_admin_user
-  user     = "root"
+  user     = var.proxmox_admin_user_short
   password = var.proxmox_admin_password
 }
 
@@ -36,9 +36,9 @@ provider "proxmox" {
 resource "null_resource" "proxmox_prep" {
   provisioner "remote-exec" {
     inline = [
-      "mkdir -p /var/lib/vz/snippets",
-      "chmod 755 /var/lib/vz/snippets",
-      "grep -q snippets /etc/pve/storage.cfg || sed -i 's/content.*/&,snippets/' /etc/pve/storage.cfg"
+      "sudo mkdir -p /var/lib/vz/snippets",
+      "sudo chmod 755 /var/lib/vz/snippets",
+      "sudo grep -q snippets /etc/pve/storage.cfg || sudo sed -i 's/content.*/&,snippets/' /etc/pve/storage.cfg"
     ]
 
     connection {
