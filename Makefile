@@ -7,6 +7,7 @@ TOFU_INIT_ARGS ?=
 TOFU_PLAN_ARGS ?=
 TOFU_APPLY_ARGS ?= -auto-approve
 TOFU_DESTROY_ARGS ?= -auto-approve
+TALOS_DIR := talos-cluster
 SCRIPTS_DIR := scripts
 NFS_DIR := nfs-server
 
@@ -17,10 +18,14 @@ help:
 	@printf '%s\n' \
 	  ' ' \
 	  'Available targets:' \
-	  '  make init            		- Run tofu init' \
-	  '  make plan           		- Run tofu plan with $(TFVARS_FILE)' \
-	  '  make apply           		- Run tofu apply with $(TFVARS_FILE)' \
-	  '  make destroy         		- Run tofu destroy with $(TFVARS_FILE)' \
+	  '  Talos cluster targets:' \
+	  '    make init            		- Run tofu init in $(TALOS_DIR)' \
+	  '    make plan           		- Run tofu plan in $(TALOS_DIR) with $(TFVARS_FILE)' \
+	  '    make apply           		- Run tofu apply in $(TALOS_DIR) with $(TFVARS_FILE)' \
+	  '    make destroy         		- Run tofu destroy in $(TALOS_DIR) with $(TFVARS_FILE)' \
+	  '    make cluster-up      		- Provision the cluster, download configs, and print the env values' \
+	  '    make cluster-down    		- De-provision the cluster with tofu destroy' \
+	  '    make get-configs     		- Download talosconfig and kubeconfig into ./.kube/' \
 	  '  NFS-Server targets: ' \
 	  '    make nfs-init        		- Run tofu init in $(NFS_DIR)' \
 	  '    make nfs-plan        		- Run tofu plan in $(NFS_DIR)' \
@@ -28,10 +33,6 @@ help:
 	  '    make nfs-destroy     		- Run tofu destroy in $(NFS_DIR)' \
 	  '    make nfs-up          		- Provision the NFS server VM' \
 	  '    make nfs-down        		- De-provision the NFS server VM' \
-	  '  Cluster targets: ' \
-	  '    make cluster-up      		- Provision the cluster, download configs, and print the env values' \
-	  '    make cluster-down    		- De-provision the cluster with tofu destroy' \
-	  '    make get-configs     		- Download talosconfig and kubeconfig into ./.kube/' \
 	  '  Environment variable targets: ' \
 	  '    make k8s-env         		- Print export commands for TALOSCONFIG and KUBECONFIG' \
 	  '    eval "$$(make cluster-up-env)"	- Provision, download configs, and export env vars in the current shell' \
@@ -39,31 +40,31 @@ help:
 	  ' ' 
 
 init:
-	tofu init $(TOFU_INIT_ARGS)
+	@tofu -chdir=$(TALOS_DIR) init $(TOFU_INIT_ARGS)
 
 plan:
-	tofu plan $(TOFU_PLAN_ARGS) -var-file=$(TFVARS_FILE)
+	@tofu -chdir=$(TALOS_DIR) plan $(TOFU_PLAN_ARGS) -var-file=$(TFVARS_FILE)
 
 apply:
-	tofu apply $(TOFU_APPLY_ARGS) -var-file=$(TFVARS_FILE)
+	@tofu -chdir=$(TALOS_DIR) apply $(TOFU_APPLY_ARGS) -var-file=$(TFVARS_FILE)
 
 destroy:
-	tofu destroy $(TOFU_DESTROY_ARGS) -var-file=$(TFVARS_FILE)
+	tofu -chdir=$(TALOS_DIR) destroy $(TOFU_DESTROY_ARGS) -var-file=$(TFVARS_FILE)
 
 nfs-init:
-	tofu -chdir=$(NFS_DIR) init $(TOFU_INIT_ARGS)
+	@tofu -chdir=$(NFS_DIR) init $(TOFU_INIT_ARGS)
 
 nfs-plan:
 	tofu -chdir=$(NFS_DIR) plan $(TOFU_PLAN_ARGS) -var-file=terraform.tfvars.json
 
 nfs-apply:
-	tofu -chdir=$(NFS_DIR) apply $(TOFU_APPLY_ARGS) -var-file=terraform.tfvars.json
+	@tofu -chdir=$(NFS_DIR) apply $(TOFU_APPLY_ARGS) -var-file=terraform.tfvars.json
 
 nfs-destroy:
-	tofu -chdir=$(NFS_DIR) destroy $(TOFU_DESTROY_ARGS) -var-file=terraform.tfvars.json
+	@tofu -chdir=$(NFS_DIR) destroy $(TOFU_DESTROY_ARGS) -var-file=terraform.tfvars.json
 
 get-configs:
-	./$(SCRIPTS_DIR)/get-configs.sh
+	@./$(SCRIPTS_DIR)/get-configs.sh
 
 k8s-env:
 	@source ./$(SCRIPTS_DIR)/set-k8s-envvars.sh
@@ -71,8 +72,8 @@ k8s-env:
 	printf 'export KUBECONFIG=%q\n' "$$KUBECONFIG"
 
 cluster-up:
-	@tofu init $(TOFU_INIT_ARGS)
-	tofu apply $(TOFU_APPLY_ARGS) -var-file=$(TFVARS_FILE)
+	@tofu -chdir=$(TALOS_DIR) init $(TOFU_INIT_ARGS)
+	tofu -chdir=$(TALOS_DIR) apply $(TOFU_APPLY_ARGS) -var-file=$(TFVARS_FILE)
 	./$(SCRIPTS_DIR)/get-configs.sh
 	source ./$(SCRIPTS_DIR)/set-k8s-envvars.sh
 	printf 'TALOSCONFIG=%s\n' "$$TALOSCONFIG"
@@ -82,8 +83,8 @@ cluster-up:
 cluster-up-env:
 	@exec 3>&1
 	exec 1>&2
-	tofu init $(TOFU_INIT_ARGS)
-	tofu apply $(TOFU_APPLY_ARGS) -var-file=$(TFVARS_FILE)
+	tofu -chdir=$(TALOS_DIR) init $(TOFU_INIT_ARGS)
+	tofu -chdir=$(TALOS_DIR) apply $(TOFU_APPLY_ARGS) -var-file=$(TFVARS_FILE)
 	./$(SCRIPTS_DIR)/get-configs.sh
 	source ./$(SCRIPTS_DIR)/set-k8s-envvars.sh
 	exec 1>&3 3>&-
@@ -91,13 +92,13 @@ cluster-up-env:
 	printf 'export KUBECONFIG=%q\n' "$$KUBECONFIG"
 
 cluster-down:
-	tofu init $(TOFU_INIT_ARGS)
-	tofu destroy $(TOFU_DESTROY_ARGS) -var-file=$(TFVARS_FILE)
+	@tofu -chdir=$(TALOS_DIR) init $(TOFU_INIT_ARGS)
+	tofu -chdir=$(TALOS_DIR) destroy $(TOFU_DESTROY_ARGS) -var-file=$(TFVARS_FILE)
 
 nfs-up:
-	tofu -chdir=$(NFS_DIR) init $(TOFU_INIT_ARGS)
+	@tofu -chdir=$(NFS_DIR) init $(TOFU_INIT_ARGS)
 	tofu -chdir=$(NFS_DIR) apply $(TOFU_APPLY_ARGS) -var-file=terraform.tfvars.json
 
 nfs-down:
-	tofu -chdir=$(NFS_DIR) init $(TOFU_INIT_ARGS)
+	@tofu -chdir=$(NFS_DIR) init $(TOFU_INIT_ARGS)
 	tofu -chdir=$(NFS_DIR) destroy $(TOFU_DESTROY_ARGS) -var-file=terraform.tfvars.json

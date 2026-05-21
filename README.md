@@ -1,74 +1,120 @@
-# Tofu-Talos-Cluster-Setup
+# Tofu Talos Cluster Setup
 
-## Background
+This repository manages two Proxmox workloads with OpenTofu:
 
-This project details the pre-requisites and steps required to deploy a talos linux Kubernetes cluster on a Proxmox Virtual Environment.  It uses the open-source version of Terraform, a product called OpenTofu, to provision the VM's on the Proxmox server.  
+1. A Talos Kubernetes cluster in `./talos-cluster`
+2. An optional NFS server VM in `./nfs-server`
 
-The configuration of each VM is declared in a .tf file and tofu will generate an execution plan against the Proxmox environment that when applied will create the VMs with the exact specs listed in the tf file.  This approach ensures a level of consistency between different environments (assuming no changes are made to the TF files before executing the scripts).
+The repository root is now primarily an orchestration layer. The root `Makefile` is the recommended entrypoint for day-to-day use, while the actual OpenTofu configurations live in their own subdirectories.
 
-## References
-  * [OpenTofu (v1.12.0)](https://opentofu.org)
-  * [Proxmox Virtual Environment (v9.1.14)](https://www.proxmox.com/en/products/proxmox-virtual-environment/overview)
-  * [Terraform Providers](https://search.opentofu.org)
-    -  [bpg/proxmox (v0.106.0)](https://search.opentofu.org/provider/bpg/proxmox/latest)
-    -  [siderolabs/talos (v0.11.0)](https://search.opentofu.org/provider/siderolabs/talos/latest)
-    -  [hashicorp/time (v0.14.0)](https://search.opentofu.org/provider/hashicorp/time/latest)
+## Repository structure
 
-**Note** Versions listed above were the latest versions available at the time this document was created or last modified.  
+| Path | Purpose |
+| --- | --- |
+| `talos-cluster/` | Talos cluster OpenTofu configuration, state, and tfvars |
+| `nfs-server/` | NFS server OpenTofu configuration, state, and tfvars |
+| `scripts/get-configs.sh` | Reads Talos outputs from `talos-cluster/` and writes `./.kube/talosconfig` and `./.kube/kubeconfig` |
+| `scripts/set-k8s-envvars.sh` | Exports `TALOSCONFIG` and `KUBECONFIG` pointing at `./.kube/` |
+| `docs/pre-requisites/` | Proxmox user, environment variable, and setup documentation |
+| `Makefile` | Root convenience wrapper for the Talos and NFS workflows |
 
-Alpha and Beta versions should not be considered as candidates for use in this solution unless the alpha/beta release fixes a specific issue being experienced.
-
-### Assumptions
-
-* You have a proxmox virtual server environment available with sufficient free resources available for the Talos Node VMs
-* That you have experience with Proxmox VE, OpenTofu and Talos Linux
-* You're comfortable with or willing to learn about using the linux command line
-* Where possible PowerShell scripts will be provided but if scripts are required they will be written in bash first and then PowerShell
-
-Note: Each Talos Node that you configure will require at a minimum 4GB of RAM and two virtual storage drives (one for boot/system and another larger drive for a replicated ceph storage config)
-```mermaid
-block-beta
-columns 1
-  block:ControlPlane
-    Node1["CP1<br/><a style='font-size: 8pt'>4GB<br/>/dev/sda<br/>/dev/sdb"]
-    Node2["CP2<br/><a style='font-size: 8pt'>4GB<br/>/dev/sda<br/>/dev/sdb"]
-    Node3["CP3<br/><a style='font-size: 8pt'>4GB<br/>/dev/sda<br/>/dev/sdb"]
-  end
-  space
-  block:WorkerPlane
-    WorkerNode1["WN1<br/><a style='font-size: 8pt'>4GB<br/>/dev/sda<br/>/dev/sdb"]
-    WorkerNode2["WN2<br/><a style='font-size: 8pt'>4GB<br/>/dev/sda<br/>/dev/sdb"]
-  end
-  ControlPlane --> WorkerPlane
-  WorkerPlane --> ControlPlane
-  
-```
 ## Pre-requisites
 
+Before provisioning anything, complete:
+
 1. [Add a terraform linux user account](./docs/pre-requisites/add-linux-user-account.md)
-2. [Environment Variables](./docs/pre-requisites//environment-variables.md)
+2. [Required environment variables](./docs/pre-requisites/environment-variables.md)
 
-## Preparing Tofu Resources
+At minimum, the OpenTofu runs in this repository expect:
 
-* make sure to set the environment variables for
-  * Proxmox VE
-  * Terraform (PM_USER/PASS, PM_API_TOKEN_ID, PM_API_TOKEN_SECRET, PROXMOX_VE_API_TOKEN, PM_API_URL, PM_TLS_INSECURE)
+- `PROXMOX_VE_USERNAME`
+- `PROXMOX_VE_PASSWORD`
 
+## Configure inputs
 
-## Verifying the plan
+Create the local tfvars files from the checked-in examples.
 
-## Applying the plan
-
-The repository also includes a separate OpenTofu configuration in `./nfs-server/` for provisioning an NFS server VM on Proxmox.
-
-From the repository root you can use:
+### Talos cluster
 
 ```bash
+cp talos-cluster/terraform.tfvars.json.example talos-cluster/terraform.tfvars.json
+```
+
+Edit `talos-cluster/terraform.tfvars.json` for your environment.
+
+### NFS server
+
+```bash
+cp nfs-server/terraform.tfvars.json.example nfs-server/terraform.tfvars.json
+```
+
+Edit `nfs-server/terraform.tfvars.json` for your environment.
+
+## Talos cluster workflow
+
+All Talos targets are invoked from the repository root, but they execute OpenTofu commands inside `./talos-cluster`.
+
+### Plan and provision
+
+```bash
+make plan
+make cluster-up
+```
+
+`make cluster-up` runs:
+
+1. `tofu -chdir=talos-cluster init`
+2. `tofu -chdir=talos-cluster apply -var-file=terraform.tfvars.json`
+3. `./scripts/get-configs.sh`
+4. `./scripts/set-k8s-envvars.sh`
+5. Prints the resolved `TALOSCONFIG` and `KUBECONFIG` paths
+
+If you want provisioning plus shell exports in a single command, use:
+
+```bash
+eval "$(make cluster-up-env)"
+```
+
+### Refresh local access files
+
+If the cluster already exists and you only need fresh local configs:
+
+```bash
+make get-configs
+eval "$(make k8s-env)"
+```
+
+This refreshes:
+
+- `./.kube/talosconfig`
+- `./.kube/kubeconfig`
+
+### Tear down the cluster
+
+```bash
+make cluster-down
+```
+
+## NFS server workflow
+
+The NFS server uses its own OpenTofu configuration in `./nfs-server`. The root `Makefile` wraps the common lifecycle commands.
+
+### Plan and provision
+
+```bash
+make nfs-plan
 make nfs-up
+```
+
+`make nfs-up` runs `tofu init` and `tofu apply` inside `./nfs-server`.
+
+### Destroy
+
+```bash
 make nfs-down
 ```
 
-Useful NFS-specific targets:
+### Lower-level NFS targets
 
 ```bash
 make nfs-init
@@ -77,37 +123,40 @@ make nfs-apply
 make nfs-destroy
 ```
 
-## Retrieving the config files
+## Available Make targets
 
-Before you can do anything with either talos or kubernetes at the commandline you'll need to pull the configuration files from the provisioned cluster.  There are two configuration files that are needed.
-
-1. The talosconfig file that provides configuration information on the provisioned talos cluster itself for the commandline utillity talosctl and 
-2. The kubeconfig file that provides configuration information and user authentication for the kubernetes commandline utility kubectl
-
-A convenience script has been created and made available in the `./scripts/` folder called `get-configs.sh` or `get-configs.ps1`
-
-From the repository root you can run:
+### Talos cluster targets
 
 ```bash
-./scripts/get-configs.sh
-source ./scripts/set-k8s-envvars.sh
+make init
+make plan
+make apply
+make destroy
+make cluster-up
+make cluster-up-env
+make cluster-down
+make get-configs
+make k8s-env
 ```
 
-###  Getting the talos config file
-Run the following command in a bash prompt to get the talosconfig file.
+These all operate on `./talos-cluster`.
+
+### NFS server targets
 
 ```bash
-tofu output -raw talos_config > talosconfig
+make nfs-init
+make nfs-plan
+make nfs-apply
+make nfs-destroy
+make nfs-up
+make nfs-down
 ```
 
-This should create a file in the current directory containing the talos cluster configuration and SSL cert information.
+These all operate on `./nfs-server`.
 
-###  Getting the kube config file
-Run the following command in a bash prompt
+## Notes
 
-
-```bash
-tofu output -raw kubeconfig > kubeconfig
-```
-
-This should create a file in the current directory containing the kube configuration and user identity information.
+- Cluster topology is hardcoded in `talos-cluster/main.tf`, not derived from `terraform.tfvars.json`
+- The root `Makefile` is the intended interface; you usually do not need to `cd` into either OpenTofu directory manually
+- Generated artifacts such as `./.kube/`, local tfvars files, and state files are intentionally untracked
+- Running `make` with no arguments prints the current help text

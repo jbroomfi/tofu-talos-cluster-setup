@@ -18,7 +18,7 @@ locals {
   disksizecontrolprimary  = var.proxmox_control_vm_primary_disk_size
   disksizeworkerprimary   = var.proxmox_worker_vm_primary_disk_size
   disksizeworkersecondary = var.proxmox_worker_vm_secondary_disk_size
-  cpucores                = var.proxmox_control_vm_cores  
+  cpucores                = var.proxmox_control_vm_cores
 }
 
 module "talos" {
