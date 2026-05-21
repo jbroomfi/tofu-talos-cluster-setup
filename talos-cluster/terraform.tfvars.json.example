@@ -7,8 +7,7 @@
         "<NODE_SUBNET_CIDR>"
     ],
     "metrics_server_kubelet_preferred_address_types": [
-        "InternalIP",
-        "Hostname"
+        "InternalIP"
     ],
     "proxmox_node": "<PROXMOX_NODE>",
     "proxmox_url": "<PROXMOX_URL>",

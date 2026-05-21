@@ -141,7 +141,7 @@ variable "metrics_server_image" {
 variable "metrics_server_kubelet_preferred_address_types" {
   description = "Ordered node address types metrics-server should use when scraping kubelets"
   type        = list(string)
-  default     = ["InternalIP", "Hostname"]
+  default     = ["InternalIP"]
 }
 
 variable "worker_extra_disks" {
