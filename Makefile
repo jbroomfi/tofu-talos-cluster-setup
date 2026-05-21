@@ -18,58 +18,31 @@ help:
 	@printf '%s\n' \
 	  ' ' \
 	  'Available targets:' \
-	  '  Talos cluster targets:' \
-	  '    make init            		- Run tofu init in $(TALOS_DIR)' \
-	  '    make plan           		- Run tofu plan in $(TALOS_DIR) with $(TFVARS_FILE)' \
-	  '    make apply           		- Run tofu apply in $(TALOS_DIR) with $(TFVARS_FILE)' \
-	  '    make destroy         		- Run tofu destroy in $(TALOS_DIR) with $(TFVARS_FILE)' \
+	  ' ' \
+	  '  Talos cluster:' \
+	  '    make cluster-init        		- Run tofu init in $(TALOS_DIR)' \
+	  '    make cluster-plan        		- Run tofu plan in $(TALOS_DIR)' \
 	  '    make cluster-up      		- Provision the cluster, download configs, and print the env values' \
 	  '    make cluster-down    		- De-provision the cluster with tofu destroy' \
-	  '    make get-configs     		- Download talosconfig and kubeconfig into ./.kube/' \
+	  '    make get-cluster-configs		- Download talosconfig and kubeconfig into ./.kube/' \
+	  '    eval "$$(make cluster-up-env)"	- Provision, download configs, and export env vars in the current shell' \
+	  ' ' \
 	  '  NFS-Server targets: ' \
 	  '    make nfs-init        		- Run tofu init in $(NFS_DIR)' \
 	  '    make nfs-plan        		- Run tofu plan in $(NFS_DIR)' \
-	  '    make nfs-apply       		- Run tofu apply in $(NFS_DIR)' \
-	  '    make nfs-destroy     		- Run tofu destroy in $(NFS_DIR)' \
 	  '    make nfs-up          		- Provision the NFS server VM' \
 	  '    make nfs-down        		- De-provision the NFS server VM' \
+	  ' ' \
 	  '  Environment variable targets: ' \
 	  '    make k8s-env         		- Print export commands for TALOSCONFIG and KUBECONFIG' \
-	  '    eval "$$(make cluster-up-env)"	- Provision, download configs, and export env vars in the current shell' \
-	  '    eval "$$(make k8s-env)"	- Export TALOSCONFIG and KUBECONFIG in the current shell' \
+	  '    eval "$$(make k8s-env)"		- Export TALOSCONFIG and KUBECONFIG in the current shell' \
 	  ' ' 
 
-init:
+cluster-init:
 	@tofu -chdir=$(TALOS_DIR) init $(TOFU_INIT_ARGS)
 
-plan:
+cluster-plan:
 	@tofu -chdir=$(TALOS_DIR) plan $(TOFU_PLAN_ARGS) -var-file=$(TFVARS_FILE)
-
-apply:
-	@tofu -chdir=$(TALOS_DIR) apply $(TOFU_APPLY_ARGS) -var-file=$(TFVARS_FILE)
-
-destroy:
-	tofu -chdir=$(TALOS_DIR) destroy $(TOFU_DESTROY_ARGS) -var-file=$(TFVARS_FILE)
-
-nfs-init:
-	@tofu -chdir=$(NFS_DIR) init $(TOFU_INIT_ARGS)
-
-nfs-plan:
-	tofu -chdir=$(NFS_DIR) plan $(TOFU_PLAN_ARGS) -var-file=terraform.tfvars.json
-
-nfs-apply:
-	@tofu -chdir=$(NFS_DIR) apply $(TOFU_APPLY_ARGS) -var-file=terraform.tfvars.json
-
-nfs-destroy:
-	@tofu -chdir=$(NFS_DIR) destroy $(TOFU_DESTROY_ARGS) -var-file=terraform.tfvars.json
-
-get-configs:
-	@./$(SCRIPTS_DIR)/get-configs.sh
-
-k8s-env:
-	@source ./$(SCRIPTS_DIR)/set-k8s-envvars.sh
-	printf 'export TALOSCONFIG=%q\n' "$$TALOSCONFIG"
-	printf 'export KUBECONFIG=%q\n' "$$KUBECONFIG"
 
 cluster-up:
 	@tofu -chdir=$(TALOS_DIR) init $(TOFU_INIT_ARGS)
@@ -79,6 +52,13 @@ cluster-up:
 	printf 'TALOSCONFIG=%s\n' "$$TALOSCONFIG"
 	printf 'KUBECONFIG=%s\n' "$$KUBECONFIG"
 	printf '\nUse eval "$$(make k8s-env)" to export them in your current shell.\n'
+
+cluster-down:
+	@tofu -chdir=$(TALOS_DIR) init $(TOFU_INIT_ARGS)
+	tofu -chdir=$(TALOS_DIR) destroy $(TOFU_DESTROY_ARGS) -var-file=$(TFVARS_FILE)
+
+get-cluster-configs:
+	@./$(SCRIPTS_DIR)/get-configs.sh
 
 cluster-up-env:
 	@exec 3>&1
@@ -91,9 +71,12 @@ cluster-up-env:
 	printf 'export TALOSCONFIG=%q\n' "$$TALOSCONFIG"
 	printf 'export KUBECONFIG=%q\n' "$$KUBECONFIG"
 
-cluster-down:
-	@tofu -chdir=$(TALOS_DIR) init $(TOFU_INIT_ARGS)
-	tofu -chdir=$(TALOS_DIR) destroy $(TOFU_DESTROY_ARGS) -var-file=$(TFVARS_FILE)
+	
+nfs-init:
+	@tofu -chdir=$(NFS_DIR) init $(TOFU_INIT_ARGS)
+
+nfs-plan:
+	tofu -chdir=$(NFS_DIR) plan $(TOFU_PLAN_ARGS) -var-file=terraform.tfvars.json
 
 nfs-up:
 	@tofu -chdir=$(NFS_DIR) init $(TOFU_INIT_ARGS)
@@ -102,3 +85,10 @@ nfs-up:
 nfs-down:
 	@tofu -chdir=$(NFS_DIR) init $(TOFU_INIT_ARGS)
 	tofu -chdir=$(NFS_DIR) destroy $(TOFU_DESTROY_ARGS) -var-file=terraform.tfvars.json
+
+
+k8s-env:
+	@source ./$(SCRIPTS_DIR)/set-k8s-envvars.sh
+	printf 'export TALOSCONFIG=%q\n' "$$TALOSCONFIG"
+	printf 'export KUBECONFIG=%q\n' "$$KUBECONFIG"
+

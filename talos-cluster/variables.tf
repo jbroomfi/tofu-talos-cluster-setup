@@ -77,13 +77,53 @@ variable "tls_insecure" {
 
 variable "talos_schematic_id" {
   # Generate your own at https://factory.talos.dev/
-  # The this id has these extensions:
-  # qemu-guest-agent (required)
-  # If you make your own make sure you check this extension
+  # This default schematic includes:
+  # qemu-guest-agent
+  # nfs-utils
+  # iscsi-tools
+  # util-linux-tools
+  # If you make your own, keep qemu-guest-agent enabled for Proxmox guest agent support.
   # The ID is independent of the version and architecture of the image
   description = "Schematic ID for the Talos cluster"
   type        = string
-  default     = "ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515"
+  default     = "e3ffcb1daac2b1fdc51d2db5f1f34c8d644c2c86517300ef8ff8e9385a457d4f"
+}
+
+variable "enable_kubelet_serving_cert_approver" {
+  description = "Deploy the kubelet serving CSR approver as a Talos inline manifest"
+  type        = bool
+  default     = true
+}
+
+variable "kubelet_serving_cert_approver_image" {
+  description = "OCI image for the kubelet serving CSR approver"
+  type        = string
+  default     = "ghcr.io/postfinance/kubelet-csr-approver:v1.2.14"
+}
+
+variable "kubelet_serving_cert_approver_provider_regex" {
+  description = "Regex used by the approver to validate kubelet DNS SANs; defaults to the hardcoded node names in main.tf"
+  type        = string
+  default     = null
+  nullable    = true
+}
+
+variable "kubelet_serving_cert_approver_provider_ip_prefixes" {
+  description = "Allowed node IP prefixes for kubelet serving CSRs; set this to your node subnet CIDRs for stricter approval"
+  type        = list(string)
+  default     = []
+}
+
+variable "kubelet_serving_cert_approver_bypass_dns_resolution" {
+  description = "Disable DNS resolution checks in the approver if node hostnames are not resolvable"
+  type        = bool
+  default     = true
+}
+
+variable "kubelet_serving_cert_approver_allowed_dns_names" {
+  description = "Maximum number of DNS SANs allowed in kubelet serving certificate requests"
+  type        = number
+  default     = 2
 }
 
 variable "worker_extra_disks" {
