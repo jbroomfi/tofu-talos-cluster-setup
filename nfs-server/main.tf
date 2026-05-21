@@ -22,7 +22,6 @@ locals {
 
 provider "proxmox" {
   endpoint = var.proxmox_url
-  # api_token = "root@pam!tofu=fce117e6-455e-48cf-8ba9-78674d5c18bf"
   username = local.username
   password = local.password
   insecure = true
