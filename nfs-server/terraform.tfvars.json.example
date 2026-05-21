@@ -1,0 +1,9 @@
+{
+    "proxmox_node": "pve-k8s",
+    "proxmox_url": "https://pve-k8s.broomfieldtech.net:8006/",
+    "proxmox_fqdn": "pve-k8s.broomfieldtech.net",
+    "tls_insecure": true,
+    "proxmox_admin_user": "root@pam",
+    "proxmox_admin_password": "?SysMin22?"
+    
+}   
