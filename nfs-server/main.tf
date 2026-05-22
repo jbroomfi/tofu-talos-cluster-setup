@@ -115,7 +115,7 @@ packages:
 
 runcmd:
   - mkdir -p /srv/nfs
-  - echo "/srv/nfs *(rw,sync,no_subtree_check,no_root_squash)" >> /etc/exports
+  - echo "/srv/nfs ${var.kubernetes_subnet}(rw,sync,no_subtree_check,no_root_squash)" >> /etc/exports
   - systemctl enable nfs-server --now
 EOF
 

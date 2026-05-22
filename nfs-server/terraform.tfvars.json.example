@@ -4,5 +4,6 @@
     "proxmox_fqdn": "<PROXMOX_NODE_FQDN>",
     "tls_insecure": true,
     "proxmox_admin_user": "<PROXMOX_ADMIN_USER>",
-    "proxmox_admin_password": "<PROXMOX_ADMIN_PASSWORD>"
+    "proxmox_admin_password": "<PROXMOX_ADMIN_PASSWORD>",
+    "kubernetes_subnet": "192.168.20.0/25"
 }   
