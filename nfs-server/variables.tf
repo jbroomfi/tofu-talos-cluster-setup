@@ -4,6 +4,12 @@ variable "proxmox_url" {
   default     = "https://proxmox.internal:8006/"
 }
 
+variable "kubernetes_subnet" {
+  description = "kubernetes subnet  e.g. 192.168.20.0/25"
+  type        = string
+  default     = "192.168.20.0/25"
+}
+
 variable "proxmox_fqdn" {
   description = "Proxmox FQDN for node"
   type        = string

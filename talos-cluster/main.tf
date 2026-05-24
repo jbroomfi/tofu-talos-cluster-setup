@@ -114,26 +114,26 @@ module "talos" {
 
   #
 
-  worker_extra_disks = {
-    "w-K8-worker-0" = [
-      {
-        datastore_id = "local-lvm"
-        size         = local.disksizeworkersecondary
-      }
-    ],
-    "w-K8-worker-1" = [
-      {
-        datastore_id = "local-lvm"
-        size         = local.disksizeworkersecondary
-      }
-    ]
-    "w-K8-worker-2" = [
-      {
-        datastore_id = "local-lvm"
-        size         = local.disksizeworkersecondary
-      }
-    ]
-  }
+#  worker_extra_disks = {
+#    "w-K8-worker-0" = [
+#      {
+#       datastore_id = "local-lvm"
+#        size         = local.disksizeworkersecondary
+#      }
+#    ],
+#    "w-K8-worker-1" = [
+#      {
+#        datastore_id = "local-lvm"
+#        size         = local.disksizeworkersecondary
+#      }
+#    ]
+#    "w-K8-worker-2" = [
+#      {
+#        datastore_id = "local-lvm"
+#        size         = local.disksizeworkersecondary
+#      }
+#    ]
+#  }
 
   control_plane_mac_addresses = {
     "w-K8-control-0" = "bc:24:11:d4:d6:37"
