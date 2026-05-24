@@ -13,6 +13,9 @@
 *.env
 .env.*
 
+# Swap files (created by text editors like Vim, nano or micro)
+*.swp
+
 # Local configuration that shouldn't be shared
 *.local
 

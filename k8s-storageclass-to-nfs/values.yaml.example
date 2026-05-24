@@ -3,9 +3,10 @@ nfs:
   path: /srv/nfs
 
 storageClass:
-  create: true
+  create: false
   name: nfs-client
-  defaultClass: true
+  provisionerName: cluster.local/nfs-subdir-external-provisioner
+  defaultClass: false
   reclaimPolicy: Delete
   archiveOnDelete: true
 

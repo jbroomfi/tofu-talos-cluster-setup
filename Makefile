@@ -36,6 +36,7 @@ help:
 	  '  Environment variable targets: ' \
 	  '    make k8s-env         		- Print export commands for TALOSCONFIG and KUBECONFIG' \
 	  '    eval "$$(make k8s-env)"		- Export TALOSCONFIG and KUBECONFIG in the current shell' \
+          '    make update-default-env          - Download configs to default profile locations' \
 	  ' ' 
 
 cluster-init:
@@ -92,3 +93,15 @@ k8s-env:
 	printf 'export TALOSCONFIG=%q\n' "$$TALOSCONFIG"
 	printf 'export KUBECONFIG=%q\n' "$$KUBECONFIG"
 
+update-default-env:
+	@echo ""
+	echo "WARNING: This will replace your ~/.kube/kubeconfig and ~/.kube/talosconfig files, if you have other cluster definitions "
+	echo "that you want to retain, press <Ctrl + C> to exit now and make a backup of the configs."
+	echo ""
+	echo "Then re-run this make option and merge in the configuration from your backups to the new config files"
+	echo ""
+	echo "Pausing here for 10s"
+	sleep 10
+	tofu -chdir=$(TALOS_DIR) output --raw kubeconfig > ~/.kube/kubeconfig
+	tofu -chdir=$(TALOS_DIR) output --raw talos_config > ~/.kube/talosconfig
+	source ~/.bashrc

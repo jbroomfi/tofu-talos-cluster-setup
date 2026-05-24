@@ -180,3 +180,61 @@ resource "proxmox_virtual_environment_vm" "nfs_vm" {
 
   started = true
 }
+
+# ############################
+# # VM using machine type q35
+# ############################
+# resource "proxmox_virtual_environment_vm" "nfs_q35_vm" {
+#   name      = "nfs-server-q35"
+#   node_name = local.node
+#   vm_id     = 350
+
+#   machine = "q35"
+#   bios   = "ovmf"
+
+#   cpu {
+#     type  = "x86-64-v2-AES"
+#     cores = 2
+#   }
+
+#   memory {
+#     dedicated = 1024
+#   }
+
+#   # Main disk (100GB)
+#   disk {
+#     datastore_id = "local-lvm"
+#     interface    = "virtio0"
+
+#     file_id = proxmox_download_file.debian.id
+#     size    = 100
+#   }
+
+#   # Cloud-init
+#   initialization {
+#     datastore_id      = "local-lvm"
+#     user_data_file_id = proxmox_virtual_environment_file.cloudinit.id
+
+#     ip_config {
+#       ipv4 {
+#         address = "dhcp"
+#       }
+#     }
+#   }
+
+#   # Networking
+#   network_device {
+#     bridge      = "vmbr0"
+#     model       = "virtio"
+#     mac_address = "bc:24:11:6e:c0:02"
+#   }
+
+#   # Required for cloud images
+#   serial_device {}
+
+#   #vga { }
+
+#   boot_order = ["virtio0"]
+
+#   started = true
+# }
