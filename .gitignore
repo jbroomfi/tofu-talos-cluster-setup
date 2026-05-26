@@ -104,3 +104,8 @@ sealed-secrets/
 ### talos cluster files
 talosconfig
 .talosconfig
+
+
+# Node
+node_modules/
+package-lock.json
